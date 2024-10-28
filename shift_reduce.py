@@ -1,31 +1,38 @@
-# Global variables
-a = []
-stk = []
-act = "SHIFT->"
+# Grammar:
+# E -> E + E
+# E -> E * E
+# E -> ( E )
+# E -> id
 
-def check():
-    ac = "REDUCE TO E"
-    patterns = [('id', 1), ('E+E', 2), ('E*E', 2), ('(E)', 2)]
+# Define parsing rules and actions
+grammar = ["id", "E+E", "E*E", "(E)"]
+
+def shift_reduce_parse(input_string):
+    stack = []
+    input_list = list(input_string)
     
-    for pattern, reduce_len in patterns:
-        for z in range(len(stk) - reduce_len):
-            if ''.join(stk[z:z + reduce_len + 1]) == pattern:
-                stk[z] = 'E'
-                del stk[z + 1:z + reduce_len + 1]
-                print(f"\n${''.join(stk)}\t{''.join(a)}$\t{ac}")
-                return
+    print("STACK \t INPUT \t ACTION")
 
-print("GRAMMAR is :\n E->E+E \n E->E*E \n E->(E) \n E->id")
-a = list(input("Enter input string: "))
+    while input_list:
+        # Shift step
+        symbol = input_list.pop(0)
+        stack.append(symbol)
+        print("$" + ''.join(stack) + "\t" + ''.join(input_list) + "$\tSHIFT " + symbol)
+        
+        # Reduce step
+        while True:
+            for rule in grammar:
+                rule_len = len(rule)
+                if ''.join(stack[-rule_len:]) == rule:
+                    for _ in range(rule_len):
+                        stack.pop()  # Remove symbols of the rule
+                    stack.append('E')  # Reduce to 'E'
+                    print("$" + ''.join(stack) + "\t" + ''.join(input_list) + "$\tREDUCE TO E (" + rule + ")")
+                    break
+            else:
+                break
 
-print("STACK \t INPUT \t ACTION")
-while a:
-    if ''.join(a[:2]) == 'id':
-        stk.extend(a[:2])
-        a[:2] = [' ', ' ']
-        print(f"\n${''.join(stk)}\t{''.join(a)}$\t{act}id")
-        check()
-    else:
-        stk.append(a.pop(0))
-        print(f"\n${''.join(stk)}\t{''.join(a)}$\t{act}symbols")
-        check()
+# Test the parser
+print("GRAMMAR is E->E+E \n E->E*E \n E->(E) \n E->id")
+input_string = input("Enter input string: ")
+shift_reduce_parse(input_string)
